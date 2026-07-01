@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function userBusinessId() {
+      return get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.businessId;
+    }
+    function ownsBusiness(businessId) {
+      return isSignedIn() && userBusinessId() == businessId;
+    }
+
+    match /profiles/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /businesses/{businessId} {
+      allow create: if isSignedIn();
+      allow read, update: if ownsBusiness(businessId);
+    }
+
+    match /{collection}/{docId} {
+      allow read, write: if isSignedIn()
+        && collection in ['invoices','expenses','transactions','customers','suppliers','healthScores','notifications','accountantInvites']
+        && (
+          (request.method == 'create' && ownsBusiness(request.resource.data.businessId)) ||
+          (request.method != 'create' && ownsBusiness(resource.data.businessId))
+        );
+    }
+  }
+}
