@@ -33,8 +33,7 @@ export default function OnboardingPage() {
       vatNumber: form.vatNumber || null, vatRegistered: form.vatRegistered,
       vatPeriodMonths: 2, currency: 'ZAR', createdAt: Date.now(),
     });
-    await updateDoc(doc(db, 'profiles', uid), { businessId: bizRef.id, onboardingComplete: true });
-    router.push('/dashboard');
+    await setDoc(doc(db, 'profiles', uid), { businessId: bizRef.id, onboardingComplete: true }, { merge: true });
   }
 
   return (
