@@ -27,13 +27,19 @@ export default function OnboardingPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const bizRef = doc(collection(db, 'businesses'));
-    await setDoc(bizRef, {
-      id: bizRef.id, name: form.name, tradingName: form.tradingName || null,
-      vatNumber: form.vatNumber || null, vatRegistered: form.vatRegistered,
-      vatPeriodMonths: 2, currency: 'ZAR', createdAt: Date.now(),
-    });
-    await setDoc(doc(db, 'profiles', uid), { businessId: bizRef.id, onboardingComplete: true }, { merge: true });
+    try {
+      const bizRef = doc(collection(db, 'businesses'));
+      await setDoc(bizRef, {
+        id: bizRef.id, name: form.name, tradingName: form.tradingName || null,
+        vatNumber: form.vatNumber || null, vatRegistered: form.vatRegistered,
+        vatPeriodMonths: 2, currency: 'ZAR', createdAt: Date.now(),
+      });
+      await setDoc(doc(db, 'profiles', uid), { businessId: bizRef.id, onboardingComplete: true }, { merge: true });
+      router.push('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
   }
 
   return (
