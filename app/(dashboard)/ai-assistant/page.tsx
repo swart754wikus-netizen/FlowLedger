@@ -60,8 +60,8 @@ export default function AiAssistantPage() {
   const COLORS = { warn: 'text-warn border-warn/25 bg-warn/5', profit: 'text-emerald border-emerald/25 bg-emerald-bg', neutral: 'text-t2 border-midnight-border bg-midnight-card' };
 
   return (
-    <div className="grid grid-cols-[1fr_320px] gap-6 h-full" style={{ height: 'calc(100vh - 60px - 3.5rem)' }}>
-      <div className="flex flex-col">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:h-[calc(100vh-60px-3.5rem)]">
+      <div className="flex h-[70vh] flex-col lg:h-auto">
         <div className="flex flex-wrap gap-2 mb-4">
           {CHIPS.map(c => <button key={c} onClick={() => send(c)} className="rounded-full border border-midnight-border2 px-3 py-1.5 text-[12px] text-t2 hover:border-emerald/40 hover:text-emerald transition-colors">{c}</button>)}
         </div>

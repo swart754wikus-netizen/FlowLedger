@@ -10,7 +10,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Total Income</div><div className="mt-2 font-mono text-[24px] font-semibold text-emerald">{formatRands(income, true)}</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Total Expenses</div><div className="mt-2 font-mono text-[24px] font-semibold text-loss">{formatRands(expense, true)}</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Net</div><div className={`mt-2 font-mono text-[24px] font-semibold ${income-expense>=0?'text-emerald':'text-loss'}`}>{formatRands(income-expense, true)}</div></div>

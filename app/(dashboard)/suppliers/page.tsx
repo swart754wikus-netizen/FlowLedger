@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
@@ -21,13 +21,21 @@ export default function SuppliersPage() {
   const [showModal, setShowModal] = useState(sp.get('new') === '1');
   const [form, setForm] = useState({ company: '', contactPerson: '', email: '', phone: '' });
 
+  useEffect(() => {
+    if (sp.get('new') === '1') setShowModal(true);
+  }, [sp]);
+
   async function save() {
     if (!business || !form.company) { toast('Enter a company name', 'error'); return; }
-    const ref = doc(collection(db, 'suppliers'));
-    await setDoc(ref, { id: ref.id, businessId: business.id, ...form, outstandingBalance: 0, vatClaimedTotal: 0, createdAt: Date.now() });
-    toast('Supplier added');
-    setShowModal(false); setForm({ company: '', contactPerson: '', email: '', phone: '' });
-    router.replace('/suppliers');
+    try {
+      const ref = doc(collection(db, 'suppliers'));
+      await setDoc(ref, { id: ref.id, businessId: business.id, ...form, outstandingBalance: 0, vatClaimedTotal: 0, createdAt: Date.now() });
+      toast('Supplier added');
+      setShowModal(false); setForm({ company: '', contactPerson: '', email: '', phone: '' });
+      router.replace('/suppliers');
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   return (
@@ -39,7 +47,7 @@ export default function SuppliersPage() {
           <button onClick={() => setShowModal(true)} className="mt-4 rounded-xl bg-emerald px-4 py-2.5 text-[13px] font-semibold text-midnight">+ New Supplier</button>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {suppliers.map(s => {
             const vatClaimed = expenses.filter(e => e.supplierName === s.company).reduce((sum,e) => sum+e.vatAmount, 0);
             return (
