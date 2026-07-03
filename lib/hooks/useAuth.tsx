@@ -36,6 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = snap.data() as UserProfile | undefined;
       setProfile(data ?? null);
       if (!data?.businessId) setLoading(false);
+    }, err => {
+      console.error('profile listener failed:', err);
+      setLoading(false);
     });
     return unsub;
   }, [user]);
@@ -44,6 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!profile?.businessId) return;
     const unsub = onSnapshot(doc(db, 'businesses', profile.businessId), snap => {
       setBusiness((snap.data() as Business) ?? null);
+      setLoading(false);
+    }, err => {
+      console.error('business listener failed:', err);
       setLoading(false);
     });
     return unsub;
