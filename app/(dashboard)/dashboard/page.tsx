@@ -55,7 +55,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <KpiCard label="Cash Available" value={formatRands(cashAvailable, true)} icon={Wallet} tone={cashAvailable >= 0 ? 'profit' : 'loss'} delay={0} />
         <KpiCard label="Monthly Income" value={formatRands(monthlyIncome, true)} icon={TrendingUp} delay={0.05} />
         <KpiCard label="Monthly Expenses" value={formatRands(monthlyExpenses, true)} icon={TrendingDown} delay={0.1} />
@@ -67,7 +67,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass rounded-2xl p-5">
           <h3 className="mb-4 text-[13px] font-semibold text-t1">Cashflow Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
