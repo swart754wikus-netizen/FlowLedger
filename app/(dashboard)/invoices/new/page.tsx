@@ -8,7 +8,7 @@ import { useCustomers } from '@/lib/hooks/useFirestoreData';
 import { useToast } from '@/components/ui/Toast';
 import { calculateInvoiceTotals } from '@/lib/utils/vat';
 import { formatRands } from '@/lib/utils/format';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Upload } from 'lucide-react';
 import type { LineItem, VatTreatment } from '@/types/domain';
 
 const INP = 'w-full rounded-xl border border-midnight-border2 bg-midnight-raised px-3.5 py-2.5 text-[13px] text-t1 placeholder:text-t3 outline-none focus:border-emerald/50 focus:ring-2 focus:ring-emerald-ring';
@@ -34,6 +34,7 @@ export default function NewInvoicePage() {
   const [discountPct, setDiscountPct] = useState(0);
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<LineItem[]>([newLine()]);
+  const [extracting, setExtracting] = useState(false);
 
   useEffect(() => {
     if (!editId) return;
@@ -56,6 +57,49 @@ export default function NewInvoicePage() {
 
   function updateLine(id: string, patch: Partial<LineItem>) {
     setLines(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setExtracting(true);
+    try {
+      const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/ai/extract-invoice', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mediaType: file.type, data }),
+      });
+      const body = await res.json();
+      if (!res.ok) { toast(body.error || 'Could not read that file', 'error'); return; }
+
+      const ex = body.extracted;
+      if (ex.customerName) {
+        const match = customers.find(c => c.company.toLowerCase() === ex.customerName.toLowerCase());
+        if (match) { setCustomerId(match.id); setNewCustomerName(''); }
+        else { setCustomerId(''); setNewCustomerName(ex.customerName); }
+      }
+      if (ex.issueDate) setIssueDate(ex.issueDate);
+      if (ex.dueDate) setDueDate(ex.dueDate);
+      if (ex.lineItems?.length) {
+        setLines(ex.lineItems.map((l: any) => ({
+          id: crypto.randomUUID(), description: l.description || '', quantity: l.quantity || 1,
+          unitPrice: l.unitPrice || 0, vatTreatment: l.vatTreatment || 'inclusive', total: 0,
+        })));
+      }
+      toast('Invoice details extracted — please review before saving');
+    } catch (err: any) {
+      toast('Could not read that file', 'error');
+    } finally {
+      setExtracting(false);
+    }
   }
 
   async function resolveCustomer(): Promise<{ id: string; name: string } | null> {
@@ -128,6 +172,14 @@ export default function NewInvoicePage() {
 
   return (
     <div className="max-w-2xl space-y-6">
+      {!editId && (
+        <label className="glass flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-midnight-border2 p-4 text-[13px] text-t2 hover:border-emerald/40 hover:text-emerald transition-colors">
+          {extracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {extracting ? 'Reading invoice…' : 'Upload an invoice photo or PDF to auto-fill'}
+          <input type="file" accept="image/*,application/pdf" className="hidden" disabled={extracting} onChange={handleUpload} />
+        </label>
+      )}
+
       <div className="glass rounded-2xl p-5 space-y-4">
         <h2 className="text-[14px] font-semibold text-t1">{editId ? 'Edit invoice' : 'Invoice details'}</h2>
         <div>
