@@ -18,13 +18,18 @@ Business data: ${JSON.stringify(context)}`;
     { role: 'user' as const, content: message },
   ];
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1000,
-    system: systemPrompt,
-    messages,
-  });
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages,
+    });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
-  return NextResponse.json({ response: text });
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    return NextResponse.json({ response: text });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ response: 'Something went wrong — try again.' }, { status: 500 });
+  }
 }

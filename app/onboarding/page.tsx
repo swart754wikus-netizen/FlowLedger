@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, updateDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/client';
 import { motion } from 'framer-motion';
 import { TrendingUp, Loader2 } from 'lucide-react';
@@ -13,13 +13,18 @@ const SEL = `${INP} appearance-none`;
 export default function OnboardingPage() {
   const router = useRouter();
   const [uid, setUid] = useState('');
+  const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', tradingName: '', vatNumber: '', vatRegistered: false });
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
+    const unsub = onAuthStateChanged(auth, async user => {
       if (!user) { router.push('/login'); return; }
+      const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+      const profile = profileSnap.data();
+      if (profile?.onboardingComplete && profile?.businessId) { router.push('/dashboard'); return; }
       setUid(user.uid);
+      setChecking(false);
     });
     return unsub;
   }, [router]);
@@ -41,6 +46,8 @@ export default function OnboardingPage() {
       setLoading(false);
     }
   }
+
+  if (checking) return <div className="flex min-h-screen items-center justify-center bg-midnight text-[13px] text-t2">Loading…</div>;
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-midnight px-4">
