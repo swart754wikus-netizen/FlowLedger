@@ -15,7 +15,7 @@ function Guard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!user) { router.push('/login'); return; }
-    if (profile && !profile.onboardingComplete) { router.push('/onboarding'); return; }
+    if (!profile || !profile.onboardingComplete) { router.push('/onboarding'); return; }
   }, [loading, user, profile, router]);
 
   if (loading || !user || !profile?.onboardingComplete) {
