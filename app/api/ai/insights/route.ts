@@ -15,19 +15,20 @@ No markdown, no preamble, just the JSON array.
 
 Business data: ${JSON.stringify(context)}`;
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 800,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: 'Generate insights now.' }],
-  });
-
-  const text = response.content[0].type === 'text' ? response.content[0].text : '[]';
   try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 800,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: 'Generate insights now.' }],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '[]';
     const clean = text.replace(/```json|```/g, '').trim();
     const insights = JSON.parse(clean);
     return NextResponse.json({ insights });
-  } catch {
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ insights: [] });
   }
 }
