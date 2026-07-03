@@ -41,8 +41,9 @@ export async function POST(req: NextRequest) {
     const clean = text.replace(/```json|```/g, '').trim();
     const extracted = JSON.parse(clean);
     return NextResponse.json({ extracted });
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
-    return NextResponse.json({ error: 'Could not read that file — try a clearer photo or a different file.' }, { status: 500 });
+    const detail = err?.error?.error?.message || err?.message || 'unknown error';
+    return NextResponse.json({ error: `Could not read that file — try a clearer photo or a different file. (${detail})` }, { status: 500 });
   }
 }
