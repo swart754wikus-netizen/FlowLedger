@@ -53,23 +53,6 @@ export default function NewInvoicePage() {
     })();
   }, [editId]);
 
-  useEffect(() => {
-    if (!editId) return;
-    (async () => {
-      const snap = await getDoc(doc(db, 'invoices', editId));
-      if (snap.exists()) {
-        const inv = snap.data() as any;
-        setCustomerId(inv.customerId);
-        setIssueDate(inv.issueDate);
-        setDueDate(inv.dueDate);
-        setDiscountPct(inv.discountPct);
-        setNotes(inv.notes || '');
-        setLines(inv.lineItems?.length ? inv.lineItems : [newLine()]);
-      }
-      setLoadingExisting(false);
-    })();
-  }, [editId]);
-
   const totals = calculateInvoiceTotals(lines, discountPct);
 
   function updateLine(id: string, patch: Partial<LineItem>) {
