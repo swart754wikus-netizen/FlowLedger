@@ -59,6 +59,41 @@ export default function NewInvoicePage() {
     setLines(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
   }
 
+  async function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Normalizes any image (including HEIC from iPhones, which Claude's vision API can't read directly)
+  // to a JPEG data URL by drawing it through a canvas, and downsizes large photos.
+  async function imageToJpegBase64(file: File): Promise<string> {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = objectUrl;
+      });
+      const maxDim = 1600;
+      const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas not supported');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      return dataUrl.split(',')[1];
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
@@ -66,16 +101,13 @@ export default function NewInvoicePage() {
 
     setExtracting(true);
     try {
-      const data = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const isPdf = file.type === 'application/pdf';
+      const data = isPdf ? await fileToBase64(file) : await imageToJpegBase64(file);
+      const mediaType = isPdf ? 'application/pdf' : 'image/jpeg';
 
       const res = await fetch('/api/ai/extract-invoice', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mediaType: file.type, data }),
+        body: JSON.stringify({ mediaType, data }),
       });
       const body = await res.json();
       if (!res.ok) { toast(body.error || 'Could not read that file', 'error'); return; }
