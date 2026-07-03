@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useAuth } from './useAuth';
-import type { Invoice, Expense, Transaction, Customer, Supplier } from '@/types/domain';
+import type { Invoice, Quote, Expense, Transaction, Customer, Supplier } from '@/types/domain';
 
 function useCollection<T>(name: string, orderField = 'createdAt') {
   const { business } = useAuth();
@@ -27,6 +27,7 @@ function useCollection<T>(name: string, orderField = 'createdAt') {
 }
 
 export const useInvoices = () => useCollection<Invoice>('invoices');
+export const useQuotes = () => useCollection<Quote>('quotes');
 export const useExpenses = () => useCollection<Expense>('expenses');
 export const useTransactions = () => useCollection<Transaction>('transactions');
 export const useCustomers = () => useCollection<Customer>('customers');

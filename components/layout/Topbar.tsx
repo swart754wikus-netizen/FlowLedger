@@ -5,6 +5,7 @@ import { Search, Bell, Plus, Menu } from 'lucide-react';
 
 const PAGE: Record<string, { title: string; action?: { label: string; href: string } }> = {
   '/dashboard': { title: 'Dashboard' },
+  '/quotes': { title: 'Quotes', action: { label: 'New Quote', href: '/quotes/new' } },
   '/invoices': { title: 'Invoices', action: { label: 'New Invoice', href: '/invoices/new' } },
   '/expenses': { title: 'Expenses', action: { label: 'New Expense', href: '/expenses?new=1' } },
   '/transactions': { title: 'Transactions' },

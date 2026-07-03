@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `You extract structured data from an uploaded invoice or receipt image/PDF for a South African bookkeeping app.
+const SYSTEM_PROMPT = `You extract structured data from an uploaded invoice, quote/quotation, or receipt image/PDF for a South African bookkeeping app.
 Return ONLY a JSON object, no markdown, no preamble, in this exact shape:
 {
   "customerName": string | null,
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
           isPdf
             ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data } }
             : { type: 'image', source: { type: 'base64', media_type: mediaType, data } },
-          { type: 'text', text: 'Extract the invoice data now.' },
+          { type: 'text', text: 'Extract the document data now.' },
         ],
       }] as any,
     });

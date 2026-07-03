@@ -4,6 +4,7 @@
 // notifications, accountants, healthScores
 
 export type InvoiceStatus = 'pending' | 'part_paid' | 'paid' | 'cancelled';
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'converted';
 export type VatTreatment = 'inclusive' | 'exclusive' | 'zero_rated' | 'exempt';
 export type TransactionType = 'income' | 'expense';
 export type UserRole = 'owner' | 'staff' | 'accountant';
@@ -55,6 +56,26 @@ export interface Invoice {
   amountPaid: number;
   balanceDue: number;
   notes?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Quote {
+  id: string;
+  businessId: string;
+  quoteNumber: string;
+  customerId: string;
+  customerName: string; // denormalized
+  status: QuoteStatus;
+  issueDate: string; // ISO date
+  expiryDate: string;
+  lineItems: LineItem[];
+  discountPct: number;
+  subtotal: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  convertedInvoiceId?: string;
   createdAt: number;
   updatedAt: number;
 }

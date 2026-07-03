@@ -5,13 +5,14 @@ import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
-  TrendingUp, LayoutDashboard, FileText, Receipt, ArrowLeftRight, Landmark,
+  TrendingUp, LayoutDashboard, FileText, FileStack, Receipt, ArrowLeftRight, Landmark,
   LineChart, Users, Truck, BarChart3, Sparkles, UserCheck, Settings, LogOut, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 const NAV = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Quotes', href: '/quotes', icon: FileStack },
   { label: 'Invoices', href: '/invoices', icon: FileText },
   { label: 'Expenses', href: '/expenses', icon: Receipt },
   { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
