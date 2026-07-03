@@ -113,20 +113,27 @@ export default function NewInvoicePage() {
       if (!res.ok) { toast(body.error || 'Could not read that file', 'error'); return; }
 
       const ex = body.extracted;
+      console.log('Extracted invoice data:', ex);
+      let appliedSomething = false;
+
       if (ex.customerName) {
         const match = customers.find(c => c.company.toLowerCase() === ex.customerName.toLowerCase());
         if (match) { setCustomerId(match.id); setNewCustomerName(''); }
         else { setCustomerId(''); setNewCustomerName(ex.customerName); }
+        appliedSomething = true;
       }
-      if (ex.issueDate) setIssueDate(ex.issueDate);
-      if (ex.dueDate) setDueDate(ex.dueDate);
+      if (ex.issueDate) { setIssueDate(ex.issueDate); appliedSomething = true; }
+      if (ex.dueDate) { setDueDate(ex.dueDate); appliedSomething = true; }
       if (ex.lineItems?.length) {
         setLines(ex.lineItems.map((l: any) => ({
           id: crypto.randomUUID(), description: l.description || '', quantity: l.quantity || 1,
           unitPrice: l.unitPrice || 0, vatTreatment: l.vatTreatment || 'inclusive', total: 0,
         })));
+        appliedSomething = true;
       }
-      toast('Invoice details extracted — please review before saving');
+
+      if (appliedSomething) toast('Invoice details extracted — please review before saving');
+      else toast('Could not find any invoice details in that file — try a clearer photo or fill it in manually', 'error');
     } catch (err: any) {
       toast('Could not read that file', 'error');
     } finally {
