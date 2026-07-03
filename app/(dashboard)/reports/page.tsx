@@ -42,7 +42,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {REPORTS.map(r => (
         <div key={r.key} className="glass flex items-center justify-between rounded-2xl p-5">
           <div className="flex items-center gap-3">

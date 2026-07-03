@@ -55,7 +55,7 @@ export default function VatCentrePage() {
         <div className="mt-1 text-[15px] font-semibold text-t1">{formatDate(periodStart.toISOString())} — {formatDate(periodEnd.toISOString())}</div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Output VAT</div><div className="mt-2 font-mono text-[22px] font-semibold text-emerald">{formatRands(outputVat, true)}</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Input VAT</div><div className="mt-2 font-mono text-[22px] font-semibold text-t1">{formatRands(inputVat, true)}</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Est. VAT Payable</div><div className={`mt-2 font-mono text-[22px] font-semibold ${vatPayable>=0?'text-warn':'text-emerald'}`}>{formatRands(Math.abs(vatPayable), true)}</div></div>

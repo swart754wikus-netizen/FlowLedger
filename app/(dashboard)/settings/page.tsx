@@ -18,8 +18,12 @@ export default function SettingsPage() {
 
   async function save() {
     if (!business) return;
-    await updateDoc(doc(db, 'businesses', business.id), form);
-    toast('Settings saved');
+    try {
+      await updateDoc(doc(db, 'businesses', business.id), form);
+      toast('Settings saved');
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   return (

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
@@ -21,13 +21,21 @@ export default function CustomersPage() {
   const [showModal, setShowModal] = useState(sp.get('new') === '1');
   const [form, setForm] = useState({ company: '', contactPerson: '', email: '', phone: '' });
 
+  useEffect(() => {
+    if (sp.get('new') === '1') setShowModal(true);
+  }, [sp]);
+
   async function save() {
     if (!business || !form.company) { toast('Enter a company name', 'error'); return; }
-    const ref = doc(collection(db, 'customers'));
-    await setDoc(ref, { id: ref.id, businessId: business.id, ...form, outstandingBalance: 0, createdAt: Date.now() });
-    toast('Customer added');
-    setShowModal(false); setForm({ company: '', contactPerson: '', email: '', phone: '' });
-    router.replace('/customers');
+    try {
+      const ref = doc(collection(db, 'customers'));
+      await setDoc(ref, { id: ref.id, businessId: business.id, ...form, outstandingBalance: 0, createdAt: Date.now() });
+      toast('Customer added');
+      setShowModal(false); setForm({ company: '', contactPerson: '', email: '', phone: '' });
+      router.replace('/customers');
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   return (
@@ -39,7 +47,7 @@ export default function CustomersPage() {
           <button onClick={() => setShowModal(true)} className="mt-4 rounded-xl bg-emerald px-4 py-2.5 text-[13px] font-semibold text-midnight">+ New Customer</button>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {customers.map(c => {
             const custInvoices = invoices.filter(i => i.customerId === c.id);
             const outstanding = custInvoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled').reduce((s,i) => s+i.balanceDue, 0);

@@ -26,7 +26,7 @@ export default function LandingPage() {
   return (
     <div className="bg-midnight">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-midnight-border bg-midnight/80 px-8 py-4 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-midnight-border bg-midnight/80 px-4 py-4 backdrop-blur-xl sm:px-8">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald"><TrendingUp className="h-4 w-4 text-midnight" strokeWidth={2.5} /></div>
           <span className="text-[15px] font-bold text-t1">FlowLedger</span>
@@ -38,13 +38,13 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-8 pt-24 pb-32 text-center">
+      <section className="relative overflow-hidden px-4 pt-24 pb-32 text-center sm:px-8">
         <div className="pointer-events-none absolute -top-20 left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-emerald/10 blur-[140px]" />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 mx-auto max-w-3xl">
           <span className="inline-block rounded-full border border-emerald/25 bg-emerald-bg px-3 py-1 text-[12px] text-emerald">Finance, made clear</span>
-          <h1 className="mt-6 text-[48px] font-bold leading-[1.1] tracking-tight text-t1">Cashflow clarity. <span className="text-emerald">VAT confidence.</span> Business control.</h1>
-          <p className="mt-5 text-[17px] text-t2 max-w-xl mx-auto">The modern finance operating system that answers one question: how is my business doing today, and what should I do next?</p>
-          <div className="mt-8 flex items-center justify-center gap-3">
+          <h1 className="mt-6 text-[32px] font-bold leading-[1.15] tracking-tight text-t1 sm:text-[48px] sm:leading-[1.1]">Cashflow clarity. <span className="text-emerald">VAT confidence.</span> Business control.</h1>
+          <p className="mt-5 text-[15px] text-t2 max-w-xl mx-auto sm:text-[17px]">The modern finance operating system that answers one question: how is my business doing today, and what should I do next?</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/register" className="flex items-center gap-2 rounded-xl bg-emerald px-6 py-3.5 text-[14px] font-semibold text-midnight hover:brightness-110">Start free trial <ArrowRight className="h-4 w-4" /></Link>
             <Link href="#features" className="rounded-xl border border-midnight-border2 px-6 py-3.5 text-[14px] text-t1 hover:bg-midnight-raised">See features</Link>
           </div>
@@ -53,7 +53,7 @@ export default function LandingPage() {
         {/* Dashboard preview mock */}
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }}
           className="glass relative z-10 mx-auto mt-16 max-w-4xl rounded-3xl p-6 shadow-glass">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {['Cash Available','Monthly Income','Net Profit','Health Score'].map((l,i) => (
               <div key={l} className="glass-raised rounded-xl p-4 text-left">
                 <div className="text-[10px] uppercase text-t3">{l}</div>
@@ -65,9 +65,9 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-8 py-20">
-        <h2 className="text-center text-[28px] font-bold text-t1">Everything your business finances need</h2>
-        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-4 gap-5">
+      <section id="features" className="px-4 py-20 sm:px-8">
+        <h2 className="text-center text-[24px] font-bold text-t1 sm:text-[28px]">Everything your business finances need</h2>
+        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, i) => (
             <motion.div key={f.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i*0.1 }}
               className="glass rounded-2xl p-5">
@@ -80,9 +80,9 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="px-8 py-20">
-        <h2 className="text-center text-[28px] font-bold text-t1">Simple, transparent pricing</h2>
-        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-3 gap-5">
+      <section className="px-4 py-20 sm:px-8">
+        <h2 className="text-center text-[24px] font-bold text-t1 sm:text-[28px]">Simple, transparent pricing</h2>
+        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-5 md:grid-cols-3">
           {PRICING.map(p => (
             <div key={p.name} className={`rounded-2xl p-6 ${p.highlight ? 'glass-raised border-2 border-emerald' : 'glass'}`}>
               {p.highlight && <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald">Most popular</span>}
@@ -98,8 +98,8 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-8 py-20 max-w-2xl mx-auto">
-        <h2 className="text-center text-[28px] font-bold text-t1 mb-10">Frequently asked questions</h2>
+      <section className="px-4 py-20 max-w-2xl mx-auto sm:px-8">
+        <h2 className="text-center text-[24px] font-bold text-t1 mb-10 sm:text-[28px]">Frequently asked questions</h2>
         <div className="space-y-3">
           {FAQS.map(f => (
             <div key={f.q} className="glass rounded-xl p-5">
@@ -111,15 +111,15 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-8 py-20 text-center">
-        <h2 className="text-[28px] font-bold text-t1">Ready to take control of your finances?</h2>
+      <section className="px-4 py-20 text-center sm:px-8">
+        <h2 className="text-[24px] font-bold text-t1 sm:text-[28px]">Ready to take control of your finances?</h2>
         <Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald px-6 py-3.5 text-[14px] font-semibold text-midnight hover:brightness-110">
           Start your free trial <ArrowRight className="h-4 w-4" />
         </Link>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-midnight-border px-8 py-8 text-center">
+      <footer className="border-t border-midnight-border px-4 py-8 text-center sm:px-8">
         <p className="text-[12px] text-t3">© {new Date().getFullYear()} FlowLedger. All rights reserved.</p>
         <p className="mt-1 text-[11px] text-t3">
           Powered by <a href="https://gls-technologies.co.za" target="_blank" rel="noopener noreferrer" className="text-emerald hover:underline">GLS Technologies</a>

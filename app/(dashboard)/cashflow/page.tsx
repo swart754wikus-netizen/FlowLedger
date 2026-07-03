@@ -31,7 +31,7 @@ export default function CashflowPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Cash Now</div><div className="mt-2 font-mono text-[24px] font-semibold text-t3">—</div><div className="mt-1 text-[11px] text-t3">Connect bank for live balance</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Expected In</div><div className="mt-2 font-mono text-[24px] font-semibold text-emerald">{formatRands(expectedIn, true)}</div></div>
         <div className="glass rounded-2xl p-5"><div className="text-[11px] uppercase tracking-wide text-t2">Expected Out</div><div className="mt-2 font-mono text-[24px] font-semibold text-loss">{formatRands(expectedOut, true)}</div></div>

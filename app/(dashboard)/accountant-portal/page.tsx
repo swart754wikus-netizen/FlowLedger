@@ -16,7 +16,8 @@ export default function AccountantPortalPage() {
   useEffect(() => {
     if (!business?.id) return;
     const q = query(collection(db, 'accountantInvites'), where('businessId', '==', business.id));
-    return onSnapshot(q, snap => setInvites(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccountantInvite[]));
+    return onSnapshot(q, snap => setInvites(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccountantInvite[]),
+      err => console.error('accountantInvites listener failed:', err));
   }, [business?.id]);
 
   async function sendInvite() {
