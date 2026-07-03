@@ -91,7 +91,7 @@ export default function ExpensesPage() {
                 <div><label className="mb-1.5 block text-[12px] text-t2">Date</label>
                   <input type="date" className={INP} value={form.date} onChange={e => setForm(f => ({...f, date: e.target.value}))} /></div>
                 <div><label className="mb-1.5 block text-[12px] text-t2">Amount</label>
-                  <input type="number" className={INP} value={form.amount} onChange={e => setForm(f => ({...f, amount: e.target.value}))} /></div>
+                  <input type="number" step="0.01" className={INP} value={form.amount} onChange={e => setForm(f => ({...f, amount: e.target.value}))} /></div>
               </div>
               <div><label className="mb-1.5 block text-[12px] text-t2">VAT treatment</label>
                 <select className={SEL} value={form.vatTreatment} onChange={e => setForm(f => ({...f, vatTreatment: e.target.value as VatTreatment}))}>

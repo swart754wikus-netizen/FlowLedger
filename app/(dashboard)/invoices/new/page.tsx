@@ -122,8 +122,8 @@ export default function NewInvoicePage() {
           return (
             <div key={line.id} className="grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 items-center">
               <input className={INP} value={line.description} onChange={e => updateLine(line.id, { description: e.target.value })} placeholder="Item description" />
-              <input type="number" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
-              <input type="number" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
+              <input type="number" step="0.01" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
+              <input type="number" step="0.01" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
               <select className={SEL} value={line.vatTreatment} onChange={e => updateLine(line.id, { vatTreatment: e.target.value as VatTreatment })}>
                 <option value="inclusive" className="bg-midnight-raised">Incl.</option>
                 <option value="exclusive" className="bg-midnight-raised">Excl.</option>
@@ -142,7 +142,7 @@ export default function NewInvoicePage() {
         <div className="pt-3 border-t border-midnight-border space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-[12px] text-t2">Discount %</label>
-            <input type="number" className="w-20 rounded-lg border border-midnight-border2 bg-midnight-raised px-2 py-1 text-[12px] text-t1 text-right" value={discountPct} onChange={e => setDiscountPct(parseFloat(e.target.value)||0)} />
+            <input type="number" step="0.01" className="w-20 rounded-lg border border-midnight-border2 bg-midnight-raised px-2 py-1 text-[12px] text-t1 text-right" value={discountPct} onChange={e => setDiscountPct(parseFloat(e.target.value)||0)} />
           </div>
           <div className="flex justify-between text-[13px] text-t2"><span>Subtotal</span><span className="font-mono">{formatRands(totals.subtotal)}</span></div>
           <div className="flex justify-between text-[13px] text-t2"><span>VAT</span><span className="font-mono">{formatRands(totals.vatAmount)}</span></div>
