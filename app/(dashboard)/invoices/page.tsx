@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useInvoices } from '@/lib/hooks/useFirestoreData';
 import { formatRands, formatDate, daysOverdue } from '@/lib/utils/format';
-import { FileText, Copy, Trash2 } from 'lucide-react';
+import { FileText, Copy, Trash2, Pencil } from 'lucide-react';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useToast } from '@/components/ui/Toast';
@@ -93,6 +93,7 @@ export default function InvoicesPage() {
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${STATUS_STYLE[inv.status]}`}>{STATUS_LABEL[inv.status]}</span>
                 </Link>
                 <div className="flex gap-1 shrink-0">
+                  <Link href={`/invoices/new?edit=${inv.id}`} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-midnight-raised hover:text-t1"><Pencil className="h-3.5 w-3.5" /></Link>
                   <button onClick={() => duplicateInvoice(inv)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-midnight-raised hover:text-t1"><Copy className="h-3.5 w-3.5" /></button>
                   <button onClick={() => deleteInvoice(inv.id)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-loss/10 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
                 </div>

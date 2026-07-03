@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { collection, addDoc, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { collection, addDoc, query, where, getDocs, getDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useCustomers } from '@/lib/hooks/useFirestoreData';
@@ -20,10 +20,13 @@ function newLine(): LineItem {
 
 export default function NewInvoicePage() {
   const router = useRouter();
+  const sp = useSearchParams();
+  const editId = sp.get('edit');
   const { business } = useAuth();
   const { data: customers } = useCustomers();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(!!editId);
   const [customerId, setCustomerId] = useState('');
   const [newCustomerName, setNewCustomerName] = useState('');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().slice(0,10));
@@ -31,6 +34,23 @@ export default function NewInvoicePage() {
   const [discountPct, setDiscountPct] = useState(0);
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<LineItem[]>([newLine()]);
+
+  useEffect(() => {
+    if (!editId) return;
+    (async () => {
+      const snap = await getDoc(doc(db, 'invoices', editId));
+      if (snap.exists()) {
+        const inv = snap.data() as any;
+        setCustomerId(inv.customerId);
+        setIssueDate(inv.issueDate);
+        setDueDate(inv.dueDate);
+        setDiscountPct(inv.discountPct);
+        setNotes(inv.notes || '');
+        setLines(inv.lineItems?.length ? inv.lineItems : [newLine()]);
+      }
+      setLoadingExisting(false);
+    })();
+  }, [editId]);
 
   const totals = calculateInvoiceTotals(lines, discountPct);
 
@@ -62,34 +82,54 @@ export default function NewInvoicePage() {
 
     setSaving(true);
     try {
-      const invoicesSnap = await getDocs(query(collection(db, 'invoices'), where('businessId', '==', business.id)));
-      const invoiceNumber = `INV-${String(invoicesSnap.size + 1).padStart(4, '0')}`;
+      if (editId) {
+        await updateDoc(doc(db, 'invoices', editId), {
+          customerId: customer.id, customerName: customer.name,
+          status, issueDate, dueDate, lineItems: lines.filter(l => l.description),
+          discountPct, subtotal: totals.subtotal, vatAmount: totals.vatAmount, total: totals.total,
+          amountPaid: status === 'paid' ? totals.total : 0,
+          balanceDue: status === 'paid' ? 0 : totals.total,
+          notes, updatedAt: Date.now(),
+        });
 
-      const ref = doc(collection(db, 'invoices'));
-      await setDoc(ref, {
-        id: ref.id, businessId: business.id, invoiceNumber, customerId: customer.id, customerName: customer.name,
-        status, issueDate, dueDate, lineItems: lines.filter(l => l.description),
-        discountPct, subtotal: totals.subtotal, vatAmount: totals.vatAmount, total: totals.total,
-        amountPaid: status === 'paid' ? totals.total : 0,
-        balanceDue: status === 'paid' ? 0 : totals.total,
-        notes, createdAt: Date.now(), updatedAt: Date.now(),
-      });
+        const txSnap = await getDocs(query(collection(db, 'transactions'), where('sourceType', '==', 'invoice'), where('sourceId', '==', editId)));
+        if (!txSnap.empty) {
+          await updateDoc(txSnap.docs[0].ref, { date: issueDate, amount: totals.total, vatAmount: totals.vatAmount, status });
+        }
 
-      // Create transaction
-      await addDoc(collection(db, 'transactions'), {
-        businessId: business.id, type: 'income', date: issueDate, amount: totals.total, vatAmount: totals.vatAmount,
-        reference: invoiceNumber, category: 'Sales', status, sourceType: 'invoice', sourceId: ref.id, createdAt: Date.now(),
-      });
+        toast('Invoice updated');
+      } else {
+        const invoicesSnap = await getDocs(query(collection(db, 'invoices'), where('businessId', '==', business.id)));
+        const invoiceNumber = `INV-${String(invoicesSnap.size + 1).padStart(4, '0')}`;
 
-      toast(`Invoice ${invoiceNumber} created`);
+        const ref = doc(collection(db, 'invoices'));
+        await setDoc(ref, {
+          id: ref.id, businessId: business.id, invoiceNumber, customerId: customer.id, customerName: customer.name,
+          status, issueDate, dueDate, lineItems: lines.filter(l => l.description),
+          discountPct, subtotal: totals.subtotal, vatAmount: totals.vatAmount, total: totals.total,
+          amountPaid: status === 'paid' ? totals.total : 0,
+          balanceDue: status === 'paid' ? 0 : totals.total,
+          notes, createdAt: Date.now(), updatedAt: Date.now(),
+        });
+
+        // Create transaction
+        await addDoc(collection(db, 'transactions'), {
+          businessId: business.id, type: 'income', date: issueDate, amount: totals.total, vatAmount: totals.vatAmount,
+          reference: invoiceNumber, category: 'Sales', status, sourceType: 'invoice', sourceId: ref.id, createdAt: Date.now(),
+        });
+
+        toast(`Invoice ${invoiceNumber} created`);
+      }
       router.push('/invoices');
     } catch (e: any) { toast(e.message, 'error'); } finally { setSaving(false); }
   }
 
+  if (loadingExisting) return <div className="text-[13px] text-t2">Loading…</div>;
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="glass rounded-2xl p-5 space-y-4">
-        <h2 className="text-[14px] font-semibold text-t1">Invoice details</h2>
+        <h2 className="text-[14px] font-semibold text-t1">{editId ? 'Edit invoice' : 'Invoice details'}</h2>
         <div>
           <label className="mb-1.5 block text-[12px] text-t2">Customer</label>
           <select className={SEL} value={customerId} onChange={e => { setCustomerId(e.target.value); setNewCustomerName(''); }}>
@@ -122,8 +162,8 @@ export default function NewInvoicePage() {
           return (
             <div key={line.id} className="grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 items-center">
               <input className={INP} value={line.description} onChange={e => updateLine(line.id, { description: e.target.value })} placeholder="Item description" />
-              <input type="number" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
-              <input type="number" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
+              <input type="number" step="0.01" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
+              <input type="number" step="0.01" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
               <select className={SEL} value={line.vatTreatment} onChange={e => updateLine(line.id, { vatTreatment: e.target.value as VatTreatment })}>
                 <option value="inclusive" className="bg-midnight-raised">Incl.</option>
                 <option value="exclusive" className="bg-midnight-raised">Excl.</option>
@@ -142,7 +182,7 @@ export default function NewInvoicePage() {
         <div className="pt-3 border-t border-midnight-border space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-[12px] text-t2">Discount %</label>
-            <input type="number" className="w-20 rounded-lg border border-midnight-border2 bg-midnight-raised px-2 py-1 text-[12px] text-t1 text-right" value={discountPct} onChange={e => setDiscountPct(parseFloat(e.target.value)||0)} />
+            <input type="number" step="0.01" className="w-20 rounded-lg border border-midnight-border2 bg-midnight-raised px-2 py-1 text-[12px] text-t1 text-right" value={discountPct} onChange={e => setDiscountPct(parseFloat(e.target.value)||0)} />
           </div>
           <div className="flex justify-between text-[13px] text-t2"><span>Subtotal</span><span className="font-mono">{formatRands(totals.subtotal)}</span></div>
           <div className="flex justify-between text-[13px] text-t2"><span>VAT</span><span className="font-mono">{formatRands(totals.vatAmount)}</span></div>
@@ -157,7 +197,7 @@ export default function NewInvoicePage() {
 
       <div className="flex gap-3">
         <button onClick={() => save('pending')} disabled={saving} className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-midnight-border2 py-3 text-[14px] text-t1 hover:bg-midnight-raised disabled:opacity-60">
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save & Send
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />} {editId ? 'Save changes' : 'Save & Send'}
         </button>
         <button onClick={() => save('paid')} disabled={saving} className="flex-1 rounded-xl bg-emerald py-3 text-[14px] font-semibold text-midnight hover:brightness-110 disabled:opacity-60">
           Mark as Paid

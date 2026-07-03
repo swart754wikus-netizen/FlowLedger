@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useToast } from '@/components/ui/Toast';
 import { formatRands, formatDate } from '@/lib/utils/format';
-import { Download, Mail, MessageCircle, CheckCircle } from 'lucide-react';
+import { Download, Mail, MessageCircle, CheckCircle, Pencil } from 'lucide-react';
 import type { Invoice, InvoiceStatus } from '@/types/domain';
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = { pending: 'Pending', part_paid: 'Part Paid', paid: 'Paid', cancelled: 'Cancelled' };
@@ -86,6 +87,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <Link href={`/invoices/new?edit=${invoice.id}`} className="flex items-center gap-1.5 rounded-xl border border-midnight-border2 px-4 py-2.5 text-[13px] text-t1 hover:bg-midnight-raised"><Pencil className="h-3.5 w-3.5" />Edit</Link>
         <button onClick={downloadPdf} className="flex items-center gap-1.5 rounded-xl border border-midnight-border2 px-4 py-2.5 text-[13px] text-t1 hover:bg-midnight-raised"><Download className="h-3.5 w-3.5" />PDF</button>
         <button onClick={() => toast('Email sent (demo)')} className="flex items-center gap-1.5 rounded-xl border border-midnight-border2 px-4 py-2.5 text-[13px] text-t1 hover:bg-midnight-raised"><Mail className="h-3.5 w-3.5" />Email</button>
         <button onClick={() => toast('WhatsApp link opened (demo)')} className="flex items-center gap-1.5 rounded-xl border border-midnight-border2 px-4 py-2.5 text-[13px] text-t1 hover:bg-midnight-raised"><MessageCircle className="h-3.5 w-3.5" />WhatsApp</button>
