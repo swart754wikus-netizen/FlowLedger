@@ -234,7 +234,7 @@ export default function NewInvoicePage() {
 
       <div className="glass rounded-2xl p-5 space-y-3">
         <h2 className="text-[14px] font-semibold text-t1">Line items</h2>
-        <div className="grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 text-[10px] uppercase tracking-wide text-t3 px-1">
+        <div className="hidden sm:grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 text-[10px] uppercase tracking-wide text-t3 px-1">
           <span>Description</span><span>Qty</span><span>Unit Price</span><span>VAT</span><span>Total</span><span/>
         </div>
         {lines.map(line => {
@@ -243,19 +243,48 @@ export default function NewInvoicePage() {
             if (line.vatTreatment === 'exclusive') return gross * 1.15;
             return gross;
           })();
+          const vatSelect = (
+            <select className={SEL} value={line.vatTreatment} onChange={e => updateLine(line.id, { vatTreatment: e.target.value as VatTreatment })}>
+              <option value="inclusive" className="bg-midnight-raised">Incl.</option>
+              <option value="exclusive" className="bg-midnight-raised">Excl.</option>
+              <option value="zero_rated" className="bg-midnight-raised">Zero</option>
+              <option value="exempt" className="bg-midnight-raised">Exempt</option>
+            </select>
+          );
           return (
-            <div key={line.id} className="grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 items-center">
-              <input className={INP} value={line.description} onChange={e => updateLine(line.id, { description: e.target.value })} placeholder="Item description" />
-              <input type="number" step="0.01" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
-              <input type="number" step="0.01" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
-              <select className={SEL} value={line.vatTreatment} onChange={e => updateLine(line.id, { vatTreatment: e.target.value as VatTreatment })}>
-                <option value="inclusive" className="bg-midnight-raised">Incl.</option>
-                <option value="exclusive" className="bg-midnight-raised">Excl.</option>
-                <option value="zero_rated" className="bg-midnight-raised">Zero</option>
-                <option value="exempt" className="bg-midnight-raised">Exempt</option>
-              </select>
-              <div className="font-mono text-[12px] text-right text-t1">{formatRands(calc)}</div>
-              <button onClick={() => setLines(ls => ls.filter(l => l.id !== line.id))} className="text-t3 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
+            <div key={line.id}>
+              {/* Desktop row */}
+              <div className="hidden sm:grid grid-cols-[1fr_60px_90px_110px_90px_28px] gap-2 items-center">
+                <input className={INP} value={line.description} onChange={e => updateLine(line.id, { description: e.target.value })} placeholder="Item description" />
+                <input type="number" step="0.01" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
+                <input type="number" step="0.01" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
+                {vatSelect}
+                <div className="font-mono text-[12px] text-right text-t1">{formatRands(calc)}</div>
+                <button onClick={() => setLines(ls => ls.filter(l => l.id !== line.id))} className="text-t3 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+
+              {/* Mobile stacked card */}
+              <div className="sm:hidden space-y-2 rounded-xl border border-midnight-border2 p-3">
+                <input className={INP} value={line.description} onChange={e => updateLine(line.id, { description: e.target.value })} placeholder="Item description" />
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wide text-t3">Qty</label>
+                    <input type="number" step="0.01" className={INP} value={line.quantity} onChange={e => updateLine(line.id, { quantity: parseFloat(e.target.value)||0 })} />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wide text-t3">Unit Price</label>
+                    <input type="number" step="0.01" className={INP} value={line.unitPrice} onChange={e => updateLine(line.id, { unitPrice: parseFloat(e.target.value)||0 })} />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wide text-t3">VAT</label>
+                    {vatSelect}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="font-mono text-[13px] text-t1">{formatRands(calc)}</span>
+                  <button onClick={() => setLines(ls => ls.filter(l => l.id !== line.id))} className="flex items-center gap-1 text-[12px] text-t3 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /> Remove</button>
+                </div>
+              </div>
             </div>
           );
         })}

@@ -20,13 +20,13 @@ export function KpiCard({ label, value, sub, icon: Icon, tone = 'default', delay
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="glass rounded-2xl p-5"
+      className="glass min-w-0 rounded-2xl p-4 sm:p-5"
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-wide text-t2">{label}</span>
-        {Icon && <Icon className="h-3.5 w-3.5 text-t3" />}
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 text-[11px] uppercase tracking-wide text-t2">{label}</span>
+        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-t3" />}
       </div>
-      <div className={cn('mt-2.5 font-mono text-[24px] font-semibold tabular-nums', TONE[tone])}>{value}</div>
+      <div className={cn('mt-2.5 truncate font-mono text-[18px] font-semibold tabular-nums sm:text-[24px]', TONE[tone])}>{value}</div>
       {sub && <div className="mt-1 text-[11px] text-t2">{sub}</div>}
     </motion.div>
   );
