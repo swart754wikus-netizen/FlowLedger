@@ -16,7 +16,10 @@ function useCollection<T>(name: string, orderField = 'createdAt') {
     const unsub = onSnapshot(q, snap => {
       setData(snap.docs.map(d => ({ id: d.id, ...d.data() })) as T[]);
       setLoading(false);
-    }, () => setLoading(false));
+    }, err => {
+      console.error(`useCollection(${name}) failed:`, err);
+      setLoading(false);
+    });
     return unsub;
   }, [business?.id, name, orderField]);
 
