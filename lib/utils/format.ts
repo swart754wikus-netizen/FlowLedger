@@ -3,7 +3,7 @@ export function formatRands(amount: number, compact = false): string {
   if (compact && Math.abs(amount) >= 100_000) return `R ${(amount / 1000).toFixed(0)}k`;
   return new Intl.NumberFormat('en-ZA', {
     style: 'currency', currency: 'ZAR', currencyDisplay: 'symbol',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(amount).replace('ZAR', 'R');
 }
 
