@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { collection, addDoc, query, where, getDocs, getDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
@@ -35,6 +35,7 @@ export default function NewInvoicePage() {
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<LineItem[]>([newLine()]);
   const [extracting, setExtracting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!editId) return;
@@ -212,11 +213,14 @@ export default function NewInvoicePage() {
   return (
     <div className="max-w-2xl space-y-6">
       {!editId && (
-        <label className="glass flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-midnight-border2 p-4 text-[13px] text-t2 hover:border-emerald/40 hover:text-emerald transition-colors">
-          {extracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-          {extracting ? 'Reading invoice…' : 'Upload an invoice photo or PDF to auto-fill'}
-          <input type="file" accept="image/*,application/pdf" className="hidden" disabled={extracting} onChange={handleUpload} />
-        </label>
+        <>
+          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}
+            className="glass flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-midnight-border2 p-4 text-[13px] text-t2 hover:border-emerald/40 hover:text-emerald transition-colors disabled:opacity-60">
+            {extracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {extracting ? 'Reading invoice…' : 'Upload an invoice photo or PDF to auto-fill'}
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" disabled={extracting} onChange={handleUpload} />
+        </>
       )}
 
       <div className="glass rounded-2xl p-5 space-y-4">
