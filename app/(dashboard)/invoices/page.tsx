@@ -8,6 +8,7 @@ import { FileText, Copy, Trash2, Pencil } from 'lucide-react';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useToast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { InvoiceStatus } from '@/types/domain';
 
 const STATUS_STYLE: Record<InvoiceStatus, string> = {
@@ -26,6 +27,7 @@ const FILTERS: { key: InvoiceStatus | 'all'; label: string }[] = [
 export default function InvoicesPage() {
   const { data: invoices, loading } = useInvoices();
   const [filter, setFilter] = useState<InvoiceStatus | 'all'>('all');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const toast = useToast();
 
   const filtered = filter === 'all' ? invoices : invoices.filter(i => i.status === filter);
@@ -36,7 +38,7 @@ export default function InvoicesPage() {
     toast('Duplicate feature creates a new draft — coming from this invoice', 'success');
   }
   async function deleteInvoice(id: string) {
-    if (!confirm('Delete this invoice permanently?')) return;
+    setDeleteTarget(null);
     await deleteDoc(doc(db, 'invoices', id));
     toast('Invoice deleted');
   }
@@ -95,13 +97,16 @@ export default function InvoicesPage() {
                 <div className="flex gap-1 shrink-0">
                   <Link href={`/invoices/new?edit=${inv.id}`} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-midnight-raised hover:text-t1"><Pencil className="h-3.5 w-3.5" /></Link>
                   <button onClick={() => duplicateInvoice(inv)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-midnight-raised hover:text-t1"><Copy className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => deleteInvoice(inv.id)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-loss/10 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => setDeleteTarget(inv.id)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-loss/10 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
                 </div>
               </motion.div>
             );
           })}
         </div>
       )}
+
+      <ConfirmDialog open={!!deleteTarget} message="Delete this invoice permanently?"
+        onConfirm={() => deleteTarget && deleteInvoice(deleteTarget)} onCancel={() => setDeleteTarget(null)} />
     </div>
   );
 }
