@@ -9,7 +9,8 @@ import { FileStack, Trash2, Pencil, ArrowRightLeft } from 'lucide-react';
 import { doc, deleteDoc, updateDoc, collection, setDoc, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useToast } from '@/components/ui/Toast';
-import type { QuoteStatus } from '@/types/domain';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import type { Quote, QuoteStatus } from '@/types/domain';
 
 const STATUS_STYLE: Record<QuoteStatus, string> = {
   draft: 'bg-t3/10 text-t3',
@@ -30,6 +31,8 @@ export default function QuotesPage() {
   const { data: quotes, loading } = useQuotes();
   const { data: invoices } = useInvoices();
   const [filter, setFilter] = useState<QuoteStatus | 'all'>('all');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [convertTarget, setConvertTarget] = useState<Quote | null>(null);
   const toast = useToast();
 
   const filtered = filter === 'all' ? quotes : quotes.filter(q => q.status === filter);
@@ -37,14 +40,14 @@ export default function QuotesPage() {
   const acceptedCount = quotes.filter(q => q.status === 'accepted' || q.status === 'converted').length;
 
   async function deleteQuote(id: string) {
-    if (!confirm('Delete this quote permanently?')) return;
+    setDeleteTarget(null);
     await deleteDoc(doc(db, 'quotes', id));
     toast('Quote deleted');
   }
 
   async function convertToInvoice(q: any) {
     if (!business) return;
-    if (!confirm(`Convert quote ${q.quoteNumber} into an invoice?`)) return;
+    setConvertTarget(null);
     try {
       const invoicesSnap = await getDocs(query(collection(db, 'invoices'), where('businessId', '==', business.id)));
       const invoiceNumber = `INV-${String(invoicesSnap.size + 1).padStart(4, '0')}`;
@@ -119,15 +122,20 @@ export default function QuotesPage() {
               </Link>
               <div className="flex gap-1 shrink-0">
                 {(q.status === 'accepted') && (
-                  <button onClick={() => convertToInvoice(q)} title="Convert to invoice" className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-emerald-bg hover:text-emerald"><ArrowRightLeft className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => setConvertTarget(q)} title="Convert to invoice" className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-emerald-bg hover:text-emerald"><ArrowRightLeft className="h-3.5 w-3.5" /></button>
                 )}
                 <Link href={`/quotes/new?edit=${q.id}`} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-midnight-raised hover:text-t1"><Pencil className="h-3.5 w-3.5" /></Link>
-                <button onClick={() => deleteQuote(q.id)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-loss/10 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setDeleteTarget(q.id)} className="flex h-7 w-7 items-center justify-center rounded-lg text-t3 hover:bg-loss/10 hover:text-loss"><Trash2 className="h-3.5 w-3.5" /></button>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      <ConfirmDialog open={!!deleteTarget} message="Delete this quote permanently?"
+        onConfirm={() => deleteTarget && deleteQuote(deleteTarget)} onCancel={() => setDeleteTarget(null)} />
+      <ConfirmDialog open={!!convertTarget} message={`Convert quote ${convertTarget?.quoteNumber} into an invoice?`}
+        onConfirm={() => convertTarget && convertToInvoice(convertTarget)} onCancel={() => setConvertTarget(null)} />
     </div>
   );
 }

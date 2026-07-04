@@ -6,6 +6,7 @@ import { doc, onSnapshot, updateDoc, collection, setDoc, addDoc, getDocs, query,
 import { db } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useToast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatRands, formatDate } from '@/lib/utils/format';
 import { Download, Mail, MessageCircle, CheckCircle, XCircle, Pencil, ArrowRightLeft } from 'lucide-react';
 import type { Quote, QuoteStatus } from '@/types/domain';
@@ -22,6 +23,7 @@ export default function QuoteDetailPage() {
   const { business } = useAuth();
   const toast = useToast();
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [confirmConvert, setConfirmConvert] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
@@ -39,7 +41,7 @@ export default function QuoteDetailPage() {
 
   async function convertToInvoice() {
     if (!business || !quote) return;
-    if (!confirm(`Convert quote ${quote.quoteNumber} into an invoice?`)) return;
+    setConfirmConvert(false);
     try {
       const invoicesSnap = await getDocs(query(collection(db, 'invoices'), where('businessId', '==', business.id)));
       const invoiceNumber = `INV-${String(invoicesSnap.size + 1).padStart(4, '0')}`;
@@ -134,9 +136,12 @@ export default function QuoteDetailPage() {
           </>
         )}
         {quote.status === 'accepted' && (
-          <button onClick={convertToInvoice} className="ml-auto flex items-center gap-1.5 rounded-xl bg-emerald px-4 py-2.5 text-[13px] font-semibold text-midnight hover:brightness-110"><ArrowRightLeft className="h-3.5 w-3.5" />Convert to Invoice</button>
+          <button onClick={() => setConfirmConvert(true)} className="ml-auto flex items-center gap-1.5 rounded-xl bg-emerald px-4 py-2.5 text-[13px] font-semibold text-midnight hover:brightness-110"><ArrowRightLeft className="h-3.5 w-3.5" />Convert to Invoice</button>
         )}
       </div>
+
+      <ConfirmDialog open={confirmConvert} message={`Convert quote ${quote.quoteNumber} into an invoice?`}
+        onConfirm={convertToInvoice} onCancel={() => setConfirmConvert(false)} />
     </div>
   );
 }
