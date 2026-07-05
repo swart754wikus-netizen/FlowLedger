@@ -38,8 +38,11 @@ export default function AiAssistantPage() {
 
   useEffect(() => {
     if (invoices.length === 0 && expenses.length === 0) { setInsightsLoading(false); return; }
-    fetch('/api/ai/insights', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: buildContext() }) })
-      .then(r => r.json()).then(d => setInsights(d.insights ?? [])).finally(() => setInsightsLoading(false));
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+    fetch('/api/ai/insights', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: buildContext() }), signal: controller.signal })
+      .then(r => r.json()).then(d => setInsights(d.insights ?? [])).catch(() => setInsights([])).finally(() => { clearTimeout(timeout); setInsightsLoading(false); });
+    return () => { clearTimeout(timeout); controller.abort(); };
   }, [invoices.length, expenses.length]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -48,12 +51,25 @@ export default function AiAssistantPage() {
     if (!text.trim() || loading) return;
     setMessages(m => [...m, { role: 'user', content: text }]);
     setInput(''); setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
     try {
-      const res = await fetch('/api/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: messages, context: buildContext() }) });
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: messages, context: buildContext() }),
+        signal: controller.signal,
+      });
       const { response } = await res.json();
       setMessages(m => [...m, { role: 'assistant', content: response }]);
-    } catch { setMessages(m => [...m, { role: 'assistant', content: 'Something went wrong — try again.' }]); }
-    setLoading(false);
+    } catch (err: any) {
+      const content = err?.name === 'AbortError'
+        ? 'That took too long to respond — check your connection and try again.'
+        : 'Something went wrong — try again.';
+      setMessages(m => [...m, { role: 'assistant', content }]);
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
   }
 
   const ICONS = { warn: AlertTriangle, profit: TrendingUp, neutral: Sparkles };
