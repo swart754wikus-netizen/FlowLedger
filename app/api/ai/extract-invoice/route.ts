@@ -3,6 +3,8 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `You extract structured data from an uploaded invoice, quote/quotation, or receipt image/PDF for a South African bookkeeping app.
 Return ONLY a JSON object, no markdown, no preamble, in this exact shape:
 {
